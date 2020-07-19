@@ -10,6 +10,7 @@
   weighted.var = TRUE,
   threshold = 0.1,
   metric = "ASD",
+  breaks = 50,
   ...
 )
 }
@@ -23,6 +24,8 @@
 \item{threshold}{an optional numeric value indicating the balance threshold for the balance plot. Default is 0.1. Only valid when \code{type = "balance"}.}
 
 \item{metric}{a character indicating the type of metric used in balance plot. Only \code{"ASD"} or \code{"PSD"} is allowed. If not specified, the default is \code{"ASD"}. See  \code{\link{summary.SumStat}} for additional details on balance metrics.}
+
+\item{breaks}{a single number giving the number of cells for the histogram. Default is 50.}
 
 \item{...}{further arguments passed to or from other methods.}
 }

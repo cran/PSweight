@@ -8,6 +8,7 @@
 #' @param weighted.var logical. Indicating whether weighted variance should be used in calculating the balance statistics. Default is \code{TRUE}.
 #' @param threshold an optional numeric value indicating the balance threshold for the balance plot. Default is 0.1. Only valid when \code{type = "balance"}.
 #' @param metric a character indicating the type of metric used in balance plot. Only \code{"ASD"} or \code{"PSD"} is allowed. If not specified, the default is \code{"ASD"}. See  \code{\link{summary.SumStat}} for additional details on balance metrics.
+#' @param breaks a single number giving the number of cells for the histogram. Default is 50.
 #' @param ... further arguments passed to or from other methods.
 #'
 #' @details For the balance plot, a vertical line at \code{threshold} is used to define balance on covariates.
@@ -36,10 +37,10 @@
 #' @import ggplot2
 #' @importFrom  stats binomial coef cov formula glm lm model.matrix plogis poisson predict qnorm quantile sd
 #' @importFrom  utils capture.output combn
-#' @importFrom  graphics hist legend
+#' @importFrom  graphics hist legend par
 #'
 #'
-plot.SumStat<-function(x, type="balance", weighted.var=TRUE, threshold=0.1, metric="ASD",...){
+plot.SumStat<-function(x, type="balance", weighted.var=TRUE, threshold=0.1, metric="ASD", breaks=50,...){
   #get object info
   m<-length(names(x$ps.weights)[-c(1,2)])+1
   zname<-names(x$ps.weights)[1]
@@ -195,16 +196,24 @@ plot.SumStat<-function(x, type="balance", weighted.var=TRUE, threshold=0.1, metr
     else{
       e<-x$propensity[,2]
       z<-x$ps.weights$zindex
-      hist(e[z==1],breaks=50,col="gray77",border="gray77",
+      par(mar=c(5,4,4,5.1),xpd=TRUE)
+      #par(xpd=T, mar=par()$mar+c(0,0,0,4))
+      he1<-hist(e[z==1],breaks=breaks,plot = FALSE)
+      ylim1<-max(he1$counts)+0.5
+      he2<-hist(e[z==2],breaks=breaks,plot = FALSE)
+      ylim2<-max(he2$counts+0.5)
+      ylims<-max(c(ylim1,ylim2))
+
+      hist(e[z==1],breaks=breaks,col="gray77",border="gray77",
            main=NULL,ylab=NULL,xlim=c(max(min(e)-0.2,0),min(max(e)+0.2,1)),xlab="Estimated propensity score",
-           freq=F,cex.lab = 1.5, cex.axis = 1.5 ,cex.main = 2, cex = 2)
-      hist(e[z==2],breaks=50,add=TRUE,freq=F)
-      legend("topright",title="group",legend=dic0,col=c("gray77","black"),
-             lty=1,lwd=1.5,bty='n',cex=1.5)
+           freq=T,cex.lab = 1.5, cex.axis = 1.5 ,cex.main = 2, cex = 2,bty='L',ylim = c(0,ylims))
+      hist(e[z==2],breaks=breaks,add=TRUE,freq=T,bty='L')
+
+      legend("topright",inset=c(-0.2, 0), title="group",legend=dic0,col=c("gray77","black"),
+             lty=1,lwd=1.5,bty='n',cex=1.5,seg.len = 0.65,xjust = 1)
     }
   }
 }
-
 
 
 

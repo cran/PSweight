@@ -89,7 +89,7 @@ the alphebatic order of treatmentlevels. The rightmost coulmn of \code{ps.estima
 to be the treatment group when estimating ATT. \code{trtgrp} can also be used to specify the treatment
 group for estimating ATT.
 
-The argument \code{zname} is required when \code{ps.estimate} is not \code{NULL}.
+The argument \code{zname} and \code{covM} are required when \code{ps.estimate} is not \code{NULL}.
 
 To generate balance statistics, one can directly specify \code{Z} and \code{covM} to indicate the treatment levels and
 covariate matrix. Alternatively, one can supply \code{data}, \code{zname}, and \code{xname} to indicate the

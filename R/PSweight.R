@@ -178,6 +178,7 @@ PSweight<-function(ps.formula=NULL,ps.estimate=NULL,trtgrp=NULL,zname=NULL,yname
   if(is.null(zname)){
     zname<-unlist(strsplit(ps.formula,'~'))[[1]][1]
   }
+  data[zname]<-as.character(unlist(data[zname]))
   categoryz1<-unique(unlist(data[zname]))
   z1<-as.numeric(factor(unlist(data[zname])))
   oldlevel1<-categoryz1[order(unique(z1))]

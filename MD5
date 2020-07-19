@@ -1,5 +1,5 @@
-eb8f161bda24e269d1a8c7a6aa940f9e *DESCRIPTION
-e3add0f2422de8413dbe5900f9730698 *NAMESPACE
+45c5f9511be574472e99454bbb91f8de *DESCRIPTION
+c65b0928f99a84e46f1fa6583ed14ac7 *NAMESPACE
 ac71316bf18625f6f41d4c641a749dff *R/ATEbin.R
 0236ea1df1c8d33e9a083d1d94dac92f *R/ATEbin_o.R
 d63c4c703f94d3b1609dfff887fc10d7 *R/ATEbin_p.R
@@ -19,11 +19,11 @@ a06cb03f9bb2d81d8ce333f61109c251 *R/ATTmul.R
 02e895f0eb54c4cb09cda54430bf2840 *R/ATTmul_o.R
 4f7e90e0f37c82a9d75b07ba6cbacacc *R/ATTmul_p.R
 a68746fb20fe18e878bd9253582da36d *R/PStrim.R
-1c22590b8274842f0c7ac340afef6318 *R/PSweight.R
-60b22082700a57244784775df129e1cb *R/SumStat.R
+8819b69ba0ce7e656705bfa81f2723b8 *R/PSweight.R
+ed28a105610450cd3526877e71a18a41 *R/SumStat.R
 b3bdba132fed0fa26701f602a71e5d96 *R/SumStat_f.R
 973516105ad1a4d24162818601ec0421 *R/SumStat_p.R
-2b09113de5dc3c6412353a5d04dfbdc6 *R/plot_SumStat.R
+a4eee8dc68e9bf95cd6976e6f2d40f88 *R/plot_SumStat.R
 182d90b4c5a98b6b79d99b2b7fb9d123 *R/print_PSweight.R
 bb2a38072b560f371b479008033a1cda *R/print_PSweightsum.R
 2846d0ff748913b6f0f6ccb6ff14d053 *R/print_SumStat.R
@@ -34,8 +34,8 @@ ce8b45e5c8101a22cb5e7b033f8be61d *R/summary_SumStat.R
 4905d1d0f4f4341452c956b9aceb1113 *data/psdata.RData
 5c74904b5e3597e20ec47f70120e1152 *man/PStrim.Rd
 e825c0320ea29ff7bcdfe33dad0277ef *man/PSweight.Rd
-bc217650bac896d181d67023da3c76a4 *man/SumStat.Rd
-c7d8d3cf0ad2758a88f862d1343c4c80 *man/plot.SumStat.Rd
+8073e1710ffd2880de2aed0c6cca6bfc *man/SumStat.Rd
+c9d9d4de7577d7066fd2157a6d1c95ce *man/plot.SumStat.Rd
 8f58a2ea2ab6282a79a1a1302af5f4b9 *man/print.PSweight.Rd
 ecee1291ea32ba7af0f65bfea6b79c5c *man/print.PSweightsum.Rd
 bc11a976d0b065897f05d8a0dd7deb8e *man/print.SumStat.Rd
