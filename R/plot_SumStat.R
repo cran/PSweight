@@ -1,6 +1,6 @@
 #' Plot the distribution of propensity scores and balance statistics
 #'
-#' Summarize the SumStat x, generate histogram or density of estimated propensity scores and
+#' Summarize the SumStat object, generate histogram or density of estimated propensity scores and
 #' plot the balance statistics under weighting versus no weighting.
 #'
 #' @param x a \code{SumStat} object obtained with \code{\link{SumStat}} function.
@@ -28,8 +28,8 @@
 #' @examples
 #' data("psdata")
 #' ps.formula<-trt~cov1+cov2+cov3+cov4+cov5+cov6
-#' msstat <- SumStat(ps.formula, trtgrp="2", data=psdata,
-#'    weight=c("ATE","ATO","ATT"))
+#' msstat <- SumStat(ps.formula, trtgrp="2", data=subset(psdata,trt>1),
+#'    weight=c("IPW","overlap","treated","entropy","matching"))
 #'
 #' plot(msstat, type="hist")
 #' plot(msstat, type="balance", weighted.var=TRUE, threshold=0.1, metric="ASD")
@@ -38,7 +38,7 @@
 #' @importFrom  stats binomial coef cov formula glm lm model.matrix plogis poisson predict qnorm quantile sd
 #' @importFrom  utils capture.output combn
 #' @importFrom  graphics hist legend par
-#'
+#' @importFrom  grDevices rgb
 #'
 plot.SumStat<-function(x, type="balance", weighted.var=TRUE, threshold=0.1, metric="ASD", breaks=50,...){
   #get object info
@@ -142,7 +142,6 @@ plot.SumStat<-function(x, type="balance", weighted.var=TRUE, threshold=0.1, metr
         stat_density(aes(x=proptmp, linetype=group, colour=group),
                      geom="line",position="identity",size=0)+
         scale_color_brewer(palette="Set1")+
-        # scale_linetype_manual(name=zname, values=c(1:ncate))+
         xlab(paste("Propensity score for group",dic0[i]))+
         theme_bw(base_size = 18)+
         theme(axis.line = element_line(),
@@ -176,11 +175,9 @@ plot.SumStat<-function(x, type="balance", weighted.var=TRUE, threshold=0.1, metr
           stat_density(aes(x=proptmp, linetype=group, colour=group),
                        geom="line",position="identity",size=0)+
           scale_color_brewer(palette="Set1")+
-          # scale_linetype_manual(name=zname, values=c(1:ncate))+
           xlab(paste("Propensity score for group",dic0[i]))+
           theme_bw(base_size = 18)+
           theme(axis.line = element_line(),
-                #panel.grid.major = element_blank(),
                 panel.grid.minor = element_blank(),
                 panel.background = element_blank())+
           guides(colour = guide_legend(override.aes=list(size=1.0)))
@@ -196,20 +193,20 @@ plot.SumStat<-function(x, type="balance", weighted.var=TRUE, threshold=0.1, metr
     else{
       e<-x$propensity[,2]
       z<-x$ps.weights$zindex
-      par(mar=c(5,4,4,5.1),xpd=TRUE)
-      #par(xpd=T, mar=par()$mar+c(0,0,0,4))
+      #enough room for 8 character-strings in legend
+      par(mar=c(5,4,4,10.1),xpd=TRUE)
       he1<-hist(e[z==1],breaks=breaks,plot = FALSE)
       ylim1<-max(he1$counts)+0.5
       he2<-hist(e[z==2],breaks=breaks,plot = FALSE)
       ylim2<-max(he2$counts+0.5)
       ylims<-max(c(ylim1,ylim2))
 
-      hist(e[z==1],breaks=breaks,col="gray77",border="gray77",
+      hist(e[z==1],breaks=breaks,col="lightslategrey",border="slategray",bty='L',
            main=NULL,ylab=NULL,xlim=c(max(min(e)-0.2,0),min(max(e)+0.2,1)),xlab="Estimated propensity score",
            freq=T,cex.lab = 1.5, cex.axis = 1.5 ,cex.main = 2, cex = 2,bty='L',ylim = c(0,ylims))
-      hist(e[z==2],breaks=breaks,add=TRUE,freq=T,bty='L')
+      hist(e[z==2],breaks=breaks,add=TRUE,col=rgb(0.8,0.8,0.8,0.5),freq=T)
 
-      legend("topright",inset=c(-0.2, 0), title="group",legend=dic0,col=c("gray77","black"),
+      legend("right",inset=c(-0.2, 0), title="group",legend=dic0,col=c("lightslategrey","lightgray"),
              lty=1,lwd=1.5,bty='n',cex=1.5,seg.len = 0.65,xjust = 1)
     }
   }
