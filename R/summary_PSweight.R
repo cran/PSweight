@@ -160,19 +160,23 @@ summary.PSweight<-function(object,contrast=NULL,type='DIF',...){
   }else{
     if(type=='DIF'){
       samp<-muboot%*%t(contrast)
-      est.h<-apply(samp,2,mean)
+      est.h<-c(contrast%*%muhat)
       se.h<-sqrt(diag(cov(samp)))
       lcl<-apply(samp,2,function(x) quantile(x,0.025))
       ucl<-apply(samp,2,function(x) quantile(x,0.975))
     }else if(type=='RR'){
       samp<-log(muboot)%*%t(contrast)
-      est.h<-apply(samp,2,mean)
+      tranmuhat<-log(muhat)
+      tranest<-c(contrast%*%tranmuhat)
+      est.h<-tranest
       se.h<-sqrt(diag(cov(samp)))
       lcl<-apply(samp,2,function(x) quantile(x,0.025))
       ucl<-apply(samp,2,function(x) quantile(x,0.975))
     }else if(type=='OR'){
       samp<-log(muboot/(1-muboot))%*%t(contrast)
-      est.h<-apply(samp,2,mean)
+      tranmuhat<-log(muhat/(1-muhat))
+      tranest<-c(contrast%*%tranmuhat)
+      est.h<-tranest
       se.h<-sqrt(diag(cov(samp)))
       lcl<-apply(samp,2,function(x) quantile(x,0.025))
       ucl<-apply(samp,2,function(x) quantile(x,0.975))
