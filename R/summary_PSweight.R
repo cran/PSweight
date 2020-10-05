@@ -72,7 +72,7 @@
 #' @importFrom  stats binomial coef cov formula glm lm model.matrix plogis poisson predict qnorm quantile sd
 #' @importFrom  utils capture.output combn
 #' @importFrom  graphics hist legend
-#'
+#' @importFrom  stats pnorm
 summary.PSweight<-function(object,contrast=NULL,type='DIF',...){
 
   muhat<-object$muhat
@@ -123,6 +123,12 @@ summary.PSweight<-function(object,contrast=NULL,type='DIF',...){
   rownames(contrast)<-paste('Contrast',1:nrow(contrast))
   colnames(contrast)<-group
 
+  #define the bootstrap p value function
+  pvalboot <- function(x,est) {
+    esttmp<-abs(est)
+    x<-abs(x-mean(x))
+    return(mean(x>esttmp))
+  }
 
   #use bootstrap or not
   if(is.null(object$muboot)){
@@ -131,6 +137,7 @@ summary.PSweight<-function(object,contrast=NULL,type='DIF',...){
       se.h<-sqrt(diag(contrast%*%covmu%*%t(contrast)))
       lcl<-est.h-qnorm(0.975)*se.h
       ucl<-est.h+qnorm(0.975)*se.h
+      p.value<-2*(1-pnorm(abs(est.h/se.h)))
     }else if(type=='RR'){
       tranmuhat<-log(muhat)
       tranest<-c(contrast%*%tranmuhat)
@@ -140,6 +147,7 @@ summary.PSweight<-function(object,contrast=NULL,type='DIF',...){
       tranucl<-tranest+qnorm(0.975)*transe
       est.h<-(tranest)
       se.h<-transe
+      p.value<-2*(1-pnorm(abs(est.h/se.h)))
       lcl<-(tranlcl)
       ucl<-(tranucl)
     }else if(type=='OR'){
@@ -151,6 +159,7 @@ summary.PSweight<-function(object,contrast=NULL,type='DIF',...){
       tranucl<-tranest+qnorm(0.975)*transe
       est.h<-(tranest)
       se.h<-transe
+      p.value<-2*(1-pnorm(abs(est.h/se.h)))
       lcl<-(tranlcl)
       ucl<-(tranucl)
     }else{
@@ -164,6 +173,13 @@ summary.PSweight<-function(object,contrast=NULL,type='DIF',...){
       se.h<-sqrt(diag(cov(samp)))
       lcl<-apply(samp,2,function(x) quantile(x,0.025))
       ucl<-apply(samp,2,function(x) quantile(x,0.975))
+      p.value<-c()
+      dimcon<-dim(samp)[2]
+      for(j in 1:dimcon){
+        esttmp<-c(est.h)[j]
+        p.value<-c(p.value,pvalboot(samp[,j],esttmp))
+      }
+
     }else if(type=='RR'){
       samp<-log(muboot)%*%t(contrast)
       tranmuhat<-log(muhat)
@@ -172,6 +188,14 @@ summary.PSweight<-function(object,contrast=NULL,type='DIF',...){
       se.h<-sqrt(diag(cov(samp)))
       lcl<-apply(samp,2,function(x) quantile(x,0.025))
       ucl<-apply(samp,2,function(x) quantile(x,0.975))
+      p.value<-c()
+      dimcon<-dim(samp)[2]
+      for(j in 1:dimcon){
+        esttmp<-c(est.h)[j]
+        p.value<-c(p.value,pvalboot(samp[,j],esttmp))
+      }
+
+
     }else if(type=='OR'){
       samp<-log(muboot/(1-muboot))%*%t(contrast)
       tranmuhat<-log(muhat/(1-muhat))
@@ -180,18 +204,25 @@ summary.PSweight<-function(object,contrast=NULL,type='DIF',...){
       se.h<-sqrt(diag(cov(samp)))
       lcl<-apply(samp,2,function(x) quantile(x,0.025))
       ucl<-apply(samp,2,function(x) quantile(x,0.975))
+      p.value<-c()
+      dimcon<-dim(samp)[2]
+      for(j in 1:dimcon){
+        esttmp<-c(est.h)[j]
+        p.value<-c(p.value,pvalboot(samp[,j],esttmp))
+      }
+
     }else{
       cat('type not found')
       cat('\n')
     }
   }
 
-  estimates<-cbind(est.h,se.h,lcl,ucl)
+  estimates<-cbind(est.h,se.h,lcl,ucl,p.value)
   if(is.vector(estimates)){
     t(estimates)
   }
 
-  colnames(estimates)<-c("Estimate","Std.Error","Lower.CL","Upper.CL")
+  colnames(estimates)<-c("Estimate","Std.Error","Lower.CL","Upper.CL","p.value")
   rownames(estimates)<-rownames(contrast)
   if(is.null(object$muboot)){
     bootestimates<-NULL
