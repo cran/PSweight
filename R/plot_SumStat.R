@@ -54,24 +54,34 @@ plot.SumStat<-function(x, type="balance", weighted.var=TRUE, threshold=0.1, metr
     dic0[i]<-as.character(x$ps.weights[which(x$ps.weights$zindex==i)[1],1])
   }
 
+
+
   if (type=="balance"){
     if(!(metric %in% c("ASD","PSD"))){
       warning("Balance metric unrecognized, 'ASD' calculated instead.")
       metric="ASD"
     }
     wt_list<-c("unweighted",names(x$ps.weights)[-c(1,2)])
-    p<-dim(x$unweighted.sumstat$ASD.unweighted.var)[1]
+    p<-dim(x$unweighted.sumstat)[1]
     wt.type<-rep(wt_list,each=p)
-    var.name<-rep(rownames(x$unweighted.sumstat$ASD.unweighted.var),m)
+    var.name<-rep(rownames(x$unweighted.sumstat),m)
 
     if(metric=="ASD"){
       ab.smd=c()
       for (wt in wt_list){
         wt_ex<-paste0(wt,".sumstat")
-        if(weighted.var==TRUE){
-          ab.smd<-c(ab.smd,apply(abs(x[[wt_ex]]$ASD.weighted.var),1,max))
-        } else{
-          ab.smd<-c(ab.smd,apply(abs(x[[wt_ex]]$ASD.unweighted.var),1,max))
+        if (ncate>2){
+          if(weighted.var==TRUE){
+            ab.smd<-c(ab.smd,apply(abs(x[[wt_ex]][,(3*ncate+1):(3*ncate+choose(ncate,2))]),1,max))
+          } else{
+            ab.smd<-c(ab.smd,apply(abs(x[[wt_ex]][,(3*ncate+choose(ncate,2)+1):(3*ncate+2*choose(ncate,2))]),1,max))
+          }
+        }else{
+          if(weighted.var==TRUE){
+            ab.smd<-c(ab.smd,abs(x[[wt_ex]][,(3*ncate+1):(3*ncate+choose(ncate,2))]))
+          } else{
+            ab.smd<-c(ab.smd,abs(x[[wt_ex]][,(3*ncate+choose(ncate,2)+1):(3*ncate+2*choose(ncate,2))]))
+          } 
         }
       }
 
@@ -99,9 +109,9 @@ plot.SumStat<-function(x, type="balance", weighted.var=TRUE, threshold=0.1, metr
       for (wt in wt_list){
         wt_ex<-paste0(wt,".sumstat")
         if(weighted.var==TRUE){
-          ab.smd<-c(ab.smd,apply(abs(x[[wt_ex]]$PSD.weighted.var),1,max))
+          ab.smd<-c(ab.smd,apply(abs(x[[wt_ex]][,(3*ncate+2*choose(ncate,2)+1):(4*ncate+2*choose(ncate,2))]),1,max))
         }else{
-          ab.smd<-c(ab.smd,apply(abs(x[[wt_ex]]$PSD.unweighted.var),1,max))
+          ab.smd<-c(ab.smd,apply(abs(x[[wt_ex]][,(4*ncate+2*choose(ncate,2)+1):(5*ncate+2*choose(ncate,2))]),1,max))
         }
       }
       #SMD forest plot
@@ -129,7 +139,7 @@ plot.SumStat<-function(x, type="balance", weighted.var=TRUE, threshold=0.1, metr
 
   if (type=="density"){
 
-    #plot/check the density of prepensity score
+    #plot/check the density of propensity score
     z<-x$ps.weights$zindex
     propensity<-x$propensity
 

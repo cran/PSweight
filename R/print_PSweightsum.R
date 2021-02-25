@@ -13,7 +13,22 @@ print.PSweightsum <- function(x,...) {
   trtgrp<-x$trtgrp
   contrast<-x$contrast
   estimates<-x$estimates
-  bt<-is.null(x$contrastboot)
+  type<-x$type
+  CI<-x$CI
+  closedform<-is.null(x$bootestimates)
+
+  cat('\n')
+
+  if(closedform){
+    cat('Closed-form inference:','\n')
+  }else{
+      cat('Use Bootstrap sample for inference:','\n')
+    }
+  cat('\n')
+
+  if(type!="DIF"){
+    cat('Inference in log scale:','\n')
+  }
 
   prtgroup<-paste(x$group,collapse = ', ')
   cat('Original group value: ',prtgroup, "\n")
@@ -21,13 +36,16 @@ print.PSweightsum <- function(x,...) {
     cat(paste('Treatment group value: ',trtgrp),'\n')
   }
   cat('\n')
-  cat('contrast','\n')
+  cat('Contrast:','\n')
   print(contrast)
   cat('\n')
-  if(!bt){
-    cat('Use bootstrap sample for inference','\n')
-    cat('\n')
-  }
-  print(estimates)
+
+
+  if(CI){
+    printCoefmat(estimates[,c(-3),drop=FALSE],has.Pvalue = TRUE,tst.ind=0)
+  }else{
+    printCoefmat(estimates[,c(-4,-5),drop=FALSE],has.Pvalue = TRUE,tst.ind=0)
+    }
+
 }
 

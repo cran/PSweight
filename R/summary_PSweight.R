@@ -15,6 +15,7 @@
 #' Estimates for these two ratio estimands will be reported on the log scale (log relative risk and log
 #' odds ratio) to improve the approximate for asymptotic normality. With binary outcomes, \code{"DIF"} is the same
 #' as the average causal risk difference. Default is "DIF" if left empty.
+#' @param CI a logical argument indicates whether confidence interval should be calculated. Default is \code{CI = TRUE}.
 #' @param ... further arguments passed to or from other methods.
 #'
 #' @details For the \code{contrast} argument, one specifies the contrast of interest and thus defines the target estimand
@@ -38,9 +39,7 @@
 #' @return A list of following values:
 #'
 #' \describe{
-#' \item{\code{ trtgrp}}{ a character indicating the treatment group, or target population under ATT weights.}
-#'
-#' \item{\code{ estimates}}{ a matrix of point estimates, standard errors and 95% confidence intervals
+#' \item{\code{ estimates}}{ a matrix of point estimates, standard errors, test statistics, 95% confidence intervals and p-values
 #' for contrasts of interest.}
 #'
 #' \item{\code{ bootestimates}}{ a list of data frames containing estimated contrasts in each bootstrap replicate,
@@ -51,7 +50,13 @@
 #' \item{\code{ group}}{ a table of treatment group labels corresponding to the output point estimates, provided in results
 #' obtained from \code{\link{PSweight}}.}
 #'
+#' \item{\code{ trtgrp}}{ a character indicating the treatment group, or target population under ATT weights.}
+#'
+#' \item{\code{ type}}{ a character specifying the target estimand.}
+#'
+#' \item{\code{ CI}}{a logical indaicator of whether confidence interval should be reported.}
 #' }
+#'
 #'
 #' @references
 #'
@@ -73,7 +78,7 @@
 #' @importFrom  utils capture.output combn
 #' @importFrom  graphics hist legend
 #' @importFrom  stats pnorm
-summary.PSweight<-function(object,contrast=NULL,type='DIF',...){
+summary.PSweight<-function(object,contrast=NULL,type='DIF',CI=TRUE,...){
 
   muhat<-object$muhat
   covmu<-object$covmu
@@ -88,7 +93,7 @@ summary.PSweight<-function(object,contrast=NULL,type='DIF',...){
 
   #transform contrast into matrix
   if(is.vector(contrast)){
-    contrast<-t(contrast)
+    contrast<-rbind(contrast)
   }
 
   #error message for wrong contrast
@@ -131,10 +136,12 @@ summary.PSweight<-function(object,contrast=NULL,type='DIF',...){
   }
 
   #use bootstrap or not
-  if(is.null(object$muboot)){
+  closedform<-is.null(object$muboot)
+  if(closedform){
     if(type=='DIF'){
       est.h<-c(contrast%*%muhat)
       se.h<-sqrt(diag(contrast%*%covmu%*%t(contrast)))
+      zval.h<-est.h/se.h
       lcl<-est.h-qnorm(0.975)*se.h
       ucl<-est.h+qnorm(0.975)*se.h
       p.value<-2*(1-pnorm(abs(est.h/se.h)))
@@ -147,6 +154,7 @@ summary.PSweight<-function(object,contrast=NULL,type='DIF',...){
       tranucl<-tranest+qnorm(0.975)*transe
       est.h<-(tranest)
       se.h<-transe
+      zval.h<-est.h/se.h
       p.value<-2*(1-pnorm(abs(est.h/se.h)))
       lcl<-(tranlcl)
       ucl<-(tranucl)
@@ -159,6 +167,7 @@ summary.PSweight<-function(object,contrast=NULL,type='DIF',...){
       tranucl<-tranest+qnorm(0.975)*transe
       est.h<-(tranest)
       se.h<-transe
+      zval.h<-est.h/se.h
       p.value<-2*(1-pnorm(abs(est.h/se.h)))
       lcl<-(tranlcl)
       ucl<-(tranucl)
@@ -171,6 +180,7 @@ summary.PSweight<-function(object,contrast=NULL,type='DIF',...){
       samp<-muboot%*%t(contrast)
       est.h<-c(contrast%*%muhat)
       se.h<-sqrt(diag(cov(samp)))
+      zval.h<-est.h/se.h
       lcl<-apply(samp,2,function(x) quantile(x,0.025))
       ucl<-apply(samp,2,function(x) quantile(x,0.975))
       p.value<-c()
@@ -186,6 +196,7 @@ summary.PSweight<-function(object,contrast=NULL,type='DIF',...){
       tranest<-c(contrast%*%tranmuhat)
       est.h<-tranest
       se.h<-sqrt(diag(cov(samp)))
+      zval.h<-est.h/se.h
       lcl<-apply(samp,2,function(x) quantile(x,0.025))
       ucl<-apply(samp,2,function(x) quantile(x,0.975))
       p.value<-c()
@@ -202,6 +213,7 @@ summary.PSweight<-function(object,contrast=NULL,type='DIF',...){
       tranest<-c(contrast%*%tranmuhat)
       est.h<-tranest
       se.h<-sqrt(diag(cov(samp)))
+      zval.h<-est.h/se.h
       lcl<-apply(samp,2,function(x) quantile(x,0.025))
       ucl<-apply(samp,2,function(x) quantile(x,0.975))
       p.value<-c()
@@ -217,12 +229,12 @@ summary.PSweight<-function(object,contrast=NULL,type='DIF',...){
     }
   }
 
-  estimates<-cbind(est.h,se.h,lcl,ucl,p.value)
+  estimates<-cbind(est.h,se.h,zval.h,lcl,ucl,p.value)
   if(is.vector(estimates)){
     t(estimates)
   }
 
-  colnames(estimates)<-c("Estimate","Std.Error","Lower.CL","Upper.CL","p.value")
+  colnames(estimates)<-c("Estimate","Std.Error","z value", "lwr","upr","Pr(>|z|)")
   rownames(estimates)<-rownames(contrast)
   if(is.null(object$muboot)){
     bootestimates<-NULL
@@ -234,7 +246,10 @@ summary.PSweight<-function(object,contrast=NULL,type='DIF',...){
     colnames(bootestimates)<-rownames(contrast)
     rownames(bootestimates)<-NULL
   }
-  out<-list(estimates=estimates,bootestimates=bootestimates,contrast=contrast,group=group,trtgrp=trtgrp)
+
+  out<-list(estimates=estimates,bootestimates=bootestimates,contrast=contrast,group=group,trtgrp=trtgrp,type=type,CI=CI)
+
+
   class(out)<-'PSweightsum'
   out
 }

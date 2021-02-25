@@ -79,31 +79,30 @@ summary.SumStat<-function(object,weighted.var=TRUE,metric="ASD",...){
   }
 
   output<-function(target){
-
     if (metric=="ASD"){
         if (weighted.var==TRUE)
-        { vm<-target$vres
-          SMD<-apply(abs(target$ASD.weighted.var),1,max)
+        { vm<-target[,(ncate*1+1):(ncate*2)]
+          SMD<-apply(abs(target[,(ncate*3+1):(ncate*4)]),1,max)
         }else{
-          vm<-target$vres0
-          SMD<-apply(abs(target$ASD.unweighted.var),1,max)
+          vm<-target[,(ncate*2+1):(ncate*3)]
+          SMD<-apply(abs(target[,(ncate*4+1):(ncate*5)]),1,max)
         }
     } else{
         if (weighted.var==TRUE)
-        { vm<-target$vres
-          SMD<-apply(abs(target$PSD.weighted.var),1,max)
+        { vm<-target[,(ncate*1+1):(ncate*2)]
+          SMD<-apply(abs(target[,(ncate*5+1):(ncate*6)]),1,max)
         }else{
-          vm<-target$vres0
-          SMD<-apply(abs(target$PSD.unweighted.var),1,max)
+          vm<-target[,(ncate*2+1):(ncate*3)]
+          SMD<-apply(abs(target[,(ncate*6+1):(ncate*7)]),1,max)
         }
     }
-    return(cbind(target$mres,vm,SMD))
+    return(cbind(target[,(ncate*0+1):(ncate*2)],SMD))
   }
 
   output_sumsumstat<-list(effective.sample.size=object$ess,unweighted=output(object$unweighted.sumstat))
 
-  for (i in 1:length(wt_list))
-  {   wt<-paste0(wt_list[i],".sumstat",collapse = "")
+  for (i in 1:length(wt_list)){
+      wt<-paste0(wt_list[i],".sumstat",collapse = "")
       target<-object[[wt]]
       output_sumsumstat[[wt_list[i]]]<-output(target)
   }

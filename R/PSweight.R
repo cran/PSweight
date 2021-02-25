@@ -42,7 +42,7 @@
 #' Default is \code{FALSE}.
 #' @param bootstrap logical. Indaicate whether bootstrap is used to estimate the standard error
 #' of the point estimates. Default is \code{FALSE}.
-#' @param R an optional integer indicating number of bootstrap replicates. Default is \code{R = 200}.
+#' @param R an optional integer indicating number of bootstrap replicates. Default is \code{R = 50}.
 #' @param out.formula an object of class \code{\link{formula}} (or one that can be coerced to that class):
 #' a symbolic description of the outcome model to be fitted. Additional details of model specification
 #' are given under "Details". This argument is optional if \code{out.estimate} is not \code{NULL}.
@@ -56,15 +56,22 @@
 #' Only required if \code{out.formula} is provided. Supported distributional families include
 #' \code{"gaussian" (link = identity)}, \code{"binomial" (link = logit)} and \code{"poisson" (link = log)}.
 #' See \code{\link{family}} in \code{\link{glm}} for more details. Default is \code{"gaussian"}.
+#' @param method a character to specify the method for propensity model. \code{"glm"} is default, and \code{"gbm"} and \code{"SuperLearner"} are also allowed.
+#' @param ps.control a list to specify addtional options when \code{method} is set to \code{"gbm"} or \code{"SuperLearner"}.
+#' @param methodout a character to specify the method for outcome regression model. \code{"glm"} is default, and \code{"gbm"} and \code{"SuperLearner"} are also allowed.
+#' @param out.control a list to specify addtional options when \code{methodout} is set to \code{"gbm"} or \code{"SuperLearner"}.
 #'
 #' @details A typical form for \code{ps.formula} is \code{treatment ~ terms} where \code{treatment} is the treatment
 #' variable (identical to the variable name used to specify \code{zname}) and \code{terms} is a series of terms
 #' which specifies a linear predictor for \code{treatment}. Similarly, a typical form for \code{out.formula} is
 #' \code{outcome ~ terms} where \code{outcome} is the outcome variable (identical to the variable name
 #' used to specify \code{yname}) and \code{terms} is a series of terms which specifies a linear
-#' predictor for \code{outcome}. Both \code{ps.formula} and \code{out.formula} specify generalized
-#' linear models when \code{ps.estimate} and/or \code{out.estimate} is \code{NULL}. See \code{glm} for
-#' more details on generalized linear models.
+#' predictor for \code{outcome}. Both \code{ps.formula} and \code{out.formula} by default specify generalized
+#' linear models when \code{ps.estimate} and/or \code{out.estimate} is \code{NULL}. The argument \code{method} and \code{methodout} allow user to choose
+#' model other than glm to fit the propensity score and outcome regression models for augmentation. Additional argument in the \code{gbm()} function can be supplied through the \code{ps.control} and \code{out.control} argument. Please refer to the user manual of the \code{gbm} package for all the
+#' allowed arguments.  \code{"SuperLearner"} is also allowed in the \code{method} and \code{methodout} arguments. Currently, the SuperLearner method only supports binary treatment with the default method set to \code{"SL.glm"}. The estimation approach is fixed to \code{"method.NNLS"} for both propensity and outcome regression models.
+#' Prediction algorithm and other tuning parameters can also be passed through\code{ps.control} and \code{out.control}. Please refer to the user manual of the \code{SuperLearner} package for all the allowed specifications.
+#'
 #'
 #' When comparing two treatments, \code{ps.estimate} can either be a vector or a two-column matrix of estimated
 #' propensity scores. If a vector is supplied, it is assumed to be the propensity scores to receive the treatment, and
@@ -97,10 +104,10 @@
 #' If \code{augmentation = TRUE}, an augmented weighting estimator will be implemented. For binary treatments, the augmented
 #' weighting estimator is presented in Mao, Li and Greene (2018). For multiple treatments, the augmented weighting estimator is
 #' mentioned in Li and Li (2019), and additional details will appear in our ongoing work (Zhou et al. 2020+). When
-#' \code{weight = "ATE"}, the augmented estimator is also referred to as a doubly-robust (DR) estimator.
+#' \code{weight = "IPW"}, the augmented estimator is also referred to as a doubly-robust (DR) estimator.
 #'
 #' When \code{bootstrap = TRUE}, the variance will be calculated by nonparametric bootstrap, with \code{R} bootstrap
-#' replications. The default of \code{R} is 200. Otherwise, the variance will be calculated using the sandwich variance
+#' replications. The default of \code{R} is 50. Otherwise, the variance will be calculated using the sandwich variance
 #' formula obtained in the M-estimation framework.
 #'
 #' @return PSweight returns a \code{PSweight} object containing a list of the following values:
@@ -175,213 +182,40 @@
 #' @import nnet
 #' @import MASS
 #' @import numDeriv
-#' @importFrom  stats binomial coef cov formula glm lm model.matrix plogis poisson predict qnorm quantile sd
-#' @importFrom  utils capture.output combn
+#' @importFrom  stats binomial coef cov formula glm lm model.matrix model.extract model.frame plogis poisson predict qnorm quantile sd as.formula printCoefmat
+#' @importFrom  utils capture.output combn tail
 #' @importFrom  graphics hist legend
 #'
-PSweight<-function(ps.formula=NULL,ps.estimate=NULL,trtgrp=NULL,zname=NULL,yname,data,weight='overlap',delta=0,augmentation=FALSE,bootstrap=FALSE,R=200,out.formula=NULL,out.estimate=NULL,family='gaussian'){
+PSweight<-function(ps.formula=NULL,ps.estimate=NULL,trtgrp=NULL,zname=NULL,yname,data,weight='overlap',delta=0,augmentation=FALSE,bootstrap=FALSE,R=50,out.formula=NULL,out.estimate=NULL,family='gaussian',method='glm',ps.control=list(),methodout='glm',out.control=list()){
 
   #extract zname
-  if(typeof(ps.formula)!="character"){
-    ps.formula<-Reduce(paste0,deparse(ps.formula))
+  if(!is.null(ps.formula)){
+    ps.formula<-as.formula(ps.formula)
+    zname<-all.vars(ps.formula)[1]
   }
-  ps.formula<-gsub(" ","",ps.formula)
-  if(is.null(zname)){
-    zname<-unlist(strsplit(ps.formula,'~'))[[1]][1]
-  }
+
   data[zname]<-as.character(unlist(data[zname]))
   categoryz1<-unique(unlist(data[zname]))
   z1<-as.numeric(factor(unlist(data[zname])))
   oldlevel1<-categoryz1[order(unique(z1))]
   ncate<-length(categoryz1)
 
+  #trim the data
+  if(delta>0){
+    trimobj<-do.call(PStrim,list(data=data,ps.formula = ps.formula, zname=zname, ps.estimte=ps.estimate,delta=delta,optimal=FALSE,out.estimate=out.estimate,method=method,ps.control=ps.control))
+    data<-trimobj$data
+    ps.estimate<-trimobj$ps.estimate
+    out.estimate<-trimobj$out.estimate
+  }
+
+
   if(ncate==2){
 
-    if(!is.null(ps.estimate)){
-      if(!is.null(trtgrp)){
-        oldlevel1<-unique(c(trtgrp,oldlevel1))[2:1]
-      }
-      #provided with estimated propenstiy
-      #convert vector form ps.estimate
-      if(is.vector(ps.estimate)){
-        ps.estimate<-cbind(1-ps.estimate,ps.estimate)
-        colnames(ps.estimate)<-oldlevel1
-      }else if(ncol(ps.estimate)==1){
-        ps.estimate<-cbind(1-ps.estimate,ps.estimate)
-        colnames(ps.estimate)<-oldlevel1
-      }
+    do.call(binest,list(ps.formula=ps.formula,ps.estimate=ps.estimate,zname=zname,yname=yname,data=data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,weight=weight,method=method,ps.control=ps.control,methodout=methodout,out.control=out.control))
 
-      #trim the data
-      if(delta>0){
-        psidx<-apply(as.matrix(ps.estimate),1,function(x) min(x)>delta)
-        if(length(unique(z1[psidx]))==ncate){
-          data<-data[psidx,]
-          ps.estimate<-ps.estimate[psidx,]
-          if(!is.null(out.estimate)){
-            out.estimate<-out.estimate[psidx,]
-          }
-        }else{
-          warning('One or more groups removed after trimming, reset your delta, trimming not applied')
-        }
-      }
-
-      #do the estimation
-      if(weight=='overlap'){
-        ATObin_p(ps.formula,ps.estimate=ps.estimate,zname,yname,data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,delta=delta)
-      }else if(weight=='IPW'){
-        ATEbin_p(ps.formula,ps.estimate=ps.estimate,zname,yname,data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,delta=delta)
-      }else if(weight=='treated'){
-        ATTbin_p(ps.formula,ps.estimate=ps.estimate,zname,yname,data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,delta=delta)
-      }else if(weight=='matching'){
-        ATMbin_p(ps.formula,ps.estimate=ps.estimate,zname,yname,data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,delta=delta)
-      }else{
-        ATENbin_p(ps.formula,ps.estimate=ps.estimate,zname,yname,data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,delta=delta)
-      }
-    }else if(!is.null(out.estimate)){
-
-      #provided with outcome only
-      #trim the data
-      if(delta>0){
-        fittrim <- glm(ps.formula, family = binomial(link = "logit"),data=data)
-        e.htrim <- as.numeric(fittrim$fitted.values)
-        e.htrim <- cbind(1-e.htrim,e.htrim)
-        psidx<-apply(as.matrix(e.htrim),1,function(x) min(x)>delta)
-        if(length(unique(z1[psidx]))==ncate){
-          data<-data[psidx,]
-          out.estimate<-out.estimate[psidx,]
-        }else{
-          warning('One or more groups removed after trimming, reset your delta, trimming not applied')
-        }
-      }
-
-      #do the estimation
-      if(weight=='overlap'){
-        ATObin_o(ps.formula,ps.estimate=ps.estimate,zname,yname,data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,delta=delta)
-      }else if(weight=='IPW'){
-        ATEbin_o(ps.formula,ps.estimate=ps.estimate,zname,yname,data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,delta=delta)
-      }else if(weight=='treated'){
-        ATTbin_o(ps.formula,ps.estimate=ps.estimate,zname,yname,data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,delta=delta)
-      }else if(weight=='matching'){
-        ATMbin_o(ps.formula,ps.estimate=ps.estimate,zname,yname,data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,delta=delta)
-      }else {
-        ATENbin_o(ps.formula,ps.estimate=ps.estimate,zname,yname,data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,delta=delta)
-      }
-    }else{
-
-      #provided with formula only
-      #trim the data
-      if(delta>0){
-        dttmp<-data
-        dttmp[zname]<-factor(unlist(dttmp[zname]))
-        fittrim <- glm(ps.formula, family = binomial(link = "logit"),data=dttmp)
-        e.htrim <- as.numeric(fittrim$fitted.values)
-        e.htrim <- cbind(1-e.htrim,e.htrim)
-        psidx<-apply(as.matrix(e.htrim),1,function(x) min(x)>delta)
-        if(length(unique(z1[psidx]))==ncate){
-          data<-data[psidx,]
-        }else{
-          warning('One or more groups removed after trimming, reset your delta, trimming not applied')
-        }
-      }
-
-      #do the estimation
-      if(weight=='overlap'){
-        ATObin(ps.formula,ps.estimate=ps.estimate,zname,yname,data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,delta=delta)
-      }else if(weight=='IPW'){
-        ATEbin(ps.formula,ps.estimate=ps.estimate,zname,yname,data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,delta=delta)
-      }else if(weight=='treated'){
-        ATTbin(ps.formula,ps.estimate=ps.estimate,zname,yname,data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,delta=delta)
-      }else if(weight=='matching'){
-        ATMbin(ps.formula,ps.estimate=ps.estimate,zname,yname,data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,delta=delta)
-      }else {
-        ATENbin(ps.formula,ps.estimate=ps.estimate,zname,yname,data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,delta=delta)
-      }
-    }
   }else{
-    if(!is.null(ps.estimate)){
-      #provided with propensity
-      #trim the data
-      if(delta>0){
-        psidx<-apply(as.matrix(ps.estimate),1,function(x) min(x)>delta)
-        if(length(unique(z1[psidx]))==ncate){
-          data<-data[psidx,]
-          ps.estimate<-ps.estimate[psidx,]
-          if(!is.null(out.estimate)){
-            out.estimate<-out.estimate[psidx,]
-          }
-        }else{
-          warning('One or more groups removed after trimming, reset your delta, trimming not applied')
-        }
-      }
 
-      #do the estimation
-      if(weight=='overlap'){
-        ATOmul_p(ps.formula,ps.estimate=ps.estimate,zname,yname,data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,delta=delta)
-      }else if(weight=='IPW'){
-        ATEmul_p(ps.formula,ps.estimate=ps.estimate,zname,yname,data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,delta=delta)
-      }else if(weight=='treated'){
-        ATTmul_p(ps.formula,ps.estimate=ps.estimate,zname,yname,data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,delta=delta)
-      }else if(weight=='matching'){
-        ATMmul_p(ps.formula,ps.estimate=ps.estimate,zname,yname,data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,delta=delta)
-      }else {
-        ATENmul_p(ps.formula,ps.estimate=ps.estimate,zname,yname,data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,delta=delta)
-      }
-    }else if(!is.null(out.estimate)){
-
-      #provided with outcome only
-      #trim the data
-      if(delta>0){
-        fittrim <- multinom(formula = ps.formula, data=data,maxit = 500, Hess = TRUE, trace = FALSE)
-        e.htrim <- fittrim$fitted.values
-        psidx<-apply(as.matrix(e.htrim),1,function(x) min(x)>delta)
-        if(length(unique(z1[psidx]))==ncate){
-          data<-data[psidx,]
-          out.estimate<-out.estimate[psidx,]
-        }else{
-          warning('One or more groups removed after trimming, reset your delta, trimming not applied')
-        }
-      }
-
-      #do the estimation
-      if(weight=='overlap'){
-        ATOmul_o(ps.formula,ps.estimate=ps.estimate,zname,yname,data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,delta=delta)
-      }else if(weight=='IPW'){
-        ATEmul_o(ps.formula,ps.estimate=ps.estimate,zname,yname,data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,delta=delta)
-      }else if(weight=='treated'){
-        ATTmul_o(ps.formula,ps.estimate=ps.estimate,zname,yname,data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,delta=delta)
-      }else if(weight=='matching'){
-        ATMmul_o(ps.formula,ps.estimate=ps.estimate,zname,yname,data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,delta=delta)
-      }else {
-        ATENmul_o(ps.formula,ps.estimate=ps.estimate,zname,yname,data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,delta=delta)
-      }
-    }else{
-
-      #provided with formula only
-      #trim the data
-      if(delta>0){
-        fittrim <- multinom(formula = ps.formula, data=data,maxit = 500, Hess = TRUE, trace = FALSE)
-        e.htrim <- fittrim$fitted.values
-        psidx<-apply(as.matrix(e.htrim),1,function(x) min(x)>delta)
-        if(length(unique(z1[psidx]))==ncate){
-          data<-data[psidx,]
-        }else{
-          warning('One or more groups removed after trimming, reset your delta, trimming not applied')
-        }
-      }
-
-      #do the estimation
-      if(weight=='overlap'){
-        ATOmul(ps.formula,ps.estimate=ps.estimate,zname,yname,data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,delta=delta)
-      }else if(weight=='IPW'){
-        ATEmul(ps.formula,ps.estimate=ps.estimate,zname,yname,data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,delta=delta)
-      }else if(weight=='treated'){
-        ATTmul(ps.formula,ps.estimate=ps.estimate,zname,yname,data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,delta=delta)
-      }else if(weight=='matching'){
-        ATMmul(ps.formula,ps.estimate=ps.estimate,zname,yname,data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,delta=delta)
-      }else {
-        ATENmul(ps.formula,ps.estimate=ps.estimate,zname,yname,data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,delta=delta)
-      }
-    }
+    do.call(mulest,list(ps.formula=ps.formula,ps.estimate=ps.estimate,zname=zname,yname=yname,data=data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,weight=weight,method=method,ps.control=ps.control,methodout=methodout,out.control=out.control))
   }
 }
 
