@@ -19,9 +19,9 @@ PSweight(
   out.formula = NULL,
   out.estimate = NULL,
   family = "gaussian",
-  method = "glm",
+  ps.method = "glm",
   ps.control = list(),
-  methodout = "glm",
+  out.method = "glm",
   out.control = list()
 )
 }
@@ -87,13 +87,13 @@ Only required if \code{out.formula} is provided. Supported distributional famili
 \code{"gaussian" (link = identity)}, \code{"binomial" (link = logit)} and \code{"poisson" (link = log)}.
 See \code{\link{family}} in \code{\link{glm}} for more details. Default is \code{"gaussian"}.}
 
-\item{method}{a character to specify the method for propensity model. \code{"glm"} is default, and \code{"gbm"} and \code{"SuperLearner"} are also allowed.}
+\item{ps.method}{a character to specify the method for estimating propensity scores. \code{"glm"} is default, and \code{"gbm"} and \code{"SuperLearner"} are also allowed.}
 
-\item{ps.control}{a list to specify addtional options when \code{method} is set to \code{"gbm"} or \code{"SuperLearner"}.}
+\item{ps.control}{a list to specify additional options when \code{method} is set to \code{"gbm"} or \code{"SuperLearner"}.}
 
-\item{methodout}{a character to specify the method for outcome regression model. \code{"glm"} is default, and \code{"gbm"} and \code{"SuperLearner"} are also allowed.}
+\item{out.method}{a character to specify the method for estimating the outcome regression model. \code{"glm"} is default, and \code{"gbm"} and \code{"SuperLearner"} are also allowed.}
 
-\item{out.control}{a list to specify addtional options when \code{methodout} is set to \code{"gbm"} or \code{"SuperLearner"}.}
+\item{out.control}{a list to specify additional options when \code{out.method} is set to \code{"gbm"} or \code{"SuperLearner"}.}
 }
 \value{
 PSweight returns a \code{PSweight} object containing a list of the following values:
@@ -134,9 +134,9 @@ which specifies a linear predictor for \code{treatment}. Similarly, a typical fo
 \code{outcome ~ terms} where \code{outcome} is the outcome variable (identical to the variable name
 used to specify \code{yname}) and \code{terms} is a series of terms which specifies a linear
 predictor for \code{outcome}. Both \code{ps.formula} and \code{out.formula} by default specify generalized
-linear models when \code{ps.estimate} and/or \code{out.estimate} is \code{NULL}. The argument \code{method} and \code{methodout} allow user to choose
+linear models when \code{ps.estimate} and/or \code{out.estimate} is \code{NULL}. The argument \code{ps.method} and \code{out.method} allow user to choose
 model other than glm to fit the propensity score and outcome regression models for augmentation. Additional argument in the \code{gbm()} function can be supplied through the \code{ps.control} and \code{out.control} argument. Please refer to the user manual of the \code{gbm} package for all the
-allowed arguments.  \code{"SuperLearner"} is also allowed in the \code{method} and \code{methodout} arguments. Currently, the SuperLearner method only supports binary treatment with the default method set to \code{"SL.glm"}. The estimation approach is fixed to \code{"method.NNLS"} for both propensity and outcome regression models.
+allowed arguments.  \code{"SuperLearner"} is also allowed in the \code{ps.method} and \code{out.method} arguments. Currently, the SuperLearner method only supports binary treatment with the default method set to \code{"SL.glm"}. The estimation approach is default to \code{"method.NNLS"} for both propensity and outcome regression models.
 Prediction algorithm and other tuning parameters can also be passed through\code{ps.control} and \code{out.control}. Please refer to the user manual of the \code{SuperLearner} package for all the allowed specifications.
 
 
@@ -187,10 +187,10 @@ out.formula<-Y~cov1+cov2+cov3+cov4+cov5+cov6
 ato1<-PSweight(ps.formula = ps.formula,yname = 'Y',data = psdata,weight = 'overlap')
 summary(ato1)
 
-# augmented weighting estimator
-ato2<-PSweight(ps.formula = ps.formula,yname = 'Y',data = psdata,
-               augmentation = TRUE,out.formula = out.formula,family = 'gaussian',weight = 'overlap')
-summary(ato2)
+# augmented weighting estimator, takes longer time to calculate sandwich variance
+# ato2<-PSweight(ps.formula = ps.formula,yname = 'Y',data = psdata,
+#              augmentation = TRUE,out.formula = out.formula,family = 'gaussian',weight = 'overlap')
+# summary(ato2)
 
 }
 \references{

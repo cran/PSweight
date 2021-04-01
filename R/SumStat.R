@@ -13,8 +13,8 @@
 #' @param data an optional data frame containing the variables in the propensity score model. If not found in data, the variables are taken from \code{environment(formula)}.
 #' @param weight a character or vector of characters including the types of weights to be used. \code{"IPW"} specifies the inverse probability weights for estimating the average treatment effect among the combined population (ATE). \code{"treated"} specifies the weights for estimating the average treatment effect among the treated (ATT). \code{"overlap"} specifies the (generalized) overlap weights for estimating the average treatment effect among the overlap population (ATO), or population at clinical equipoise. \code{"matching"} specifies the matching weights for estimating the average treatment effect among the matched population (ATM). \code{"entropy"} specifies the entropy weights for the average treatment effect of entropy weighted population (ATEN). Default is \code{"overlap"}.
 #' @param delta trimming threshold for estimated (generalized) propensity scores. Should be no larger than 1 / number of treatment groups. Default is 0, corresponding to no trimming.
-#' @param method a character to specify the method for propensity model. \code{"glm"} is default, and \code{"gbm"} and \code{"SuperLearner"} are also allowed.
-#' @param ps.control a list to specify addtional options when \code{method} is set to \code{"gbm"} or \code{"SuperLearner"}.
+#' @param method a character to specify the method for estimating propensity scores. \code{"glm"} is default, and \code{"gbm"} and \code{"SuperLearner"} are also allowed.
+#' @param ps.control a list to specify additional options when \code{method} is set to \code{"gbm"} or \code{"SuperLearner"}.
 #' @details A typical form for \code{ps.formula} is \code{treatment ~ terms} where \code{treatment} is the treatment
 #' variable (identical to the variable name used to specify \code{zname}) and \code{terms} is a series of terms
 #' which specifies a linear predictor for \code{treatment}. \code{ps.formula} specifies logistic or multinomial logistic
@@ -52,7 +52,7 @@
 #' \code{gbm} package. Additional argument in the \code{gbm()} function can be supplied through the \code{ps.control=list()} argument in \code{SumStat()}. Please refer to the user manual of the gbm package for all the
 #' allowed arguments. Currently, models for binary or multinomial treatment will be automatically chosen based on the number of treatment categories.
 #' \code{"SuperLearner"} is also allowed in the \code{method} argument to pass the propensity score estimation to the \code{SuperLearner()} function in SuperLearner package.
-#' Currently, the SuperLearner method only supports binary treatment with the default method set to \code{"SL.glm"}. The estimation approach is fixed to \code{"method.NNLS"} in the \code{SumStat()} function.
+#' Currently, the SuperLearner method only supports binary treatment with the default method set to \code{"SL.glm"}. The estimation approach is default to \code{"method.NNLS"} in the \code{SumStat()} function.
 #' Prediction algorithm and other tuning parameters can also be passed through \code{ps.control=list()} to \code{SumStat()}. Please refer to the user manual of the \code{SuperLearner} package for all the allowed specifications.
 #'
 #' @return SumStat returns a \code{SumStat} object including a list of the following value:
@@ -131,12 +131,12 @@
 #' #summary(msstat)
 #'
 #' # importing user-supplied propensity scores "e.h"
-#' fit <- nnet::multinom(formula=ps.formula, data=psdata, maxit=500, trace=FALSE)
-#' e.h <- fit$fitted.values
-#' varname <- c("cov1","cov2","cov3","cov4","cov5","cov6")
-#' msstat0 <- SumStat(zname="trt", xname=varname, data=psdata, ps.estimate=e.h,
-#'    trtgrp="2",  weight=c("IPW","overlap","treated","entropy","matching"))
-#' summary(msstat0)
+#' # fit <- nnet::multinom(formula=ps.formula, data=psdata, maxit=500, trace=FALSE)
+#' # e.h <- fit$fitted.values
+#' # varname <- c("cov1","cov2","cov3","cov4","cov5","cov6")
+#' # msstat0 <- SumStat(zname="trt", xname=varname, data=psdata, ps.estimate=e.h,
+#' #  trtgrp="2",  weight=c("IPW","overlap","treated","entropy","matching"))
+#' # summary(msstat0)
 #'
 #' @import nnet SuperLearner gbm
 #' @importFrom  stats binomial coef cov formula glm lm model.matrix plogis poisson predict qnorm quantile sd

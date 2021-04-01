@@ -1,6 +1,6 @@
 #' Illustrative dataset for PSweight
 #'
-#' This is a real observational study with binary and multiple treatment groups to illustate the ulity of PSweight.
+#' This is a real observational study with binary and multiple treatment groups to illustrate the utility of PSweight functions.
 #'
 #' @docType data
 #'
@@ -8,8 +8,8 @@
 #'
 #' @format A data frame with 3642 rows and 16 columns.
 #'
-#' @details An dataset from the National Child Development Survey (NCDS) of the United Kingdom (UK). This dataset is obtained through the CC0 waiver from the work by Battistin and Sianesi (2011). 
-#'  Mising entries are imputed with multiple imputation.
+#' @details An dataset from the National Child Development Survey (NCDS) of the United Kingdom (UK). This dataset is obtained through the CC0 waiver from the work by Battistin and Sianesi (2011).
+#'  For illustration, missing entries are imputed once with Multiple Imputation by Chained Equations (MICE).
 #'
 #' This data frame contains the following columns:
 #' \itemize{
@@ -17,7 +17,7 @@
 #'
 #' \item wage: gross hourly wage in pound in log scale.
 #'
-#' \item Dany: whether reveiced any education before.
+#' \item Dany: whether received any education before.
 #'
 #' \item Dmult: three levels of educational attainment.
 #'

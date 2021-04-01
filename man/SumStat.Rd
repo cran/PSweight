@@ -40,9 +40,9 @@ SumStat(
 
 \item{delta}{trimming threshold for estimated (generalized) propensity scores. Should be no larger than 1 / number of treatment groups. Default is 0, corresponding to no trimming.}
 
-\item{method}{a character to specify the method for propensity model. \code{"glm"} is default, and \code{"gbm"} and \code{"SuperLearner"} are also allowed.}
+\item{method}{a character to specify the method for estimating propensity scores. \code{"glm"} is default, and \code{"gbm"} and \code{"SuperLearner"} are also allowed.}
 
-\item{ps.control}{a list to specify addtional options when \code{method} is set to \code{"gbm"} or \code{"SuperLearner"}.}
+\item{ps.control}{a list to specify additional options when \code{method} is set to \code{"gbm"} or \code{"SuperLearner"}.}
 }
 \value{
 SumStat returns a \code{SumStat} object including a list of the following value:
@@ -118,7 +118,7 @@ and multinomial logistic regression will be used for outcomes with more than two
 \code{gbm} package. Additional argument in the \code{gbm()} function can be supplied through the \code{ps.control=list()} argument in \code{SumStat()}. Please refer to the user manual of the gbm package for all the
 allowed arguments. Currently, models for binary or multinomial treatment will be automatically chosen based on the number of treatment categories.
 \code{"SuperLearner"} is also allowed in the \code{method} argument to pass the propensity score estimation to the \code{SuperLearner()} function in SuperLearner package.
-Currently, the SuperLearner method only supports binary treatment with the default method set to \code{"SL.glm"}. The estimation approach is fixed to \code{"method.NNLS"} in the \code{SumStat()} function.
+Currently, the SuperLearner method only supports binary treatment with the default method set to \code{"SL.glm"}. The estimation approach is default to \code{"method.NNLS"} in the \code{SumStat()} function.
 Prediction algorithm and other tuning parameters can also be passed through \code{ps.control=list()} to \code{SumStat()}. Please refer to the user manual of the \code{SuperLearner} package for all the allowed specifications.
 }
 \examples{
@@ -133,12 +133,12 @@ msstat <- SumStat(ps.formula, trtgrp="2", data=psdata,
 #summary(msstat)
 
 # importing user-supplied propensity scores "e.h"
-fit <- nnet::multinom(formula=ps.formula, data=psdata, maxit=500, trace=FALSE)
-e.h <- fit$fitted.values
-varname <- c("cov1","cov2","cov3","cov4","cov5","cov6")
-msstat0 <- SumStat(zname="trt", xname=varname, data=psdata, ps.estimate=e.h,
-   trtgrp="2",  weight=c("IPW","overlap","treated","entropy","matching"))
-summary(msstat0)
+# fit <- nnet::multinom(formula=ps.formula, data=psdata, maxit=500, trace=FALSE)
+# e.h <- fit$fitted.values
+# varname <- c("cov1","cov2","cov3","cov4","cov5","cov6")
+# msstat0 <- SumStat(zname="trt", xname=varname, data=psdata, ps.estimate=e.h,
+#  trtgrp="2",  weight=c("IPW","overlap","treated","entropy","matching"))
+# summary(msstat0)
 
 }
 \references{

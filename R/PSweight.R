@@ -56,10 +56,10 @@
 #' Only required if \code{out.formula} is provided. Supported distributional families include
 #' \code{"gaussian" (link = identity)}, \code{"binomial" (link = logit)} and \code{"poisson" (link = log)}.
 #' See \code{\link{family}} in \code{\link{glm}} for more details. Default is \code{"gaussian"}.
-#' @param method a character to specify the method for propensity model. \code{"glm"} is default, and \code{"gbm"} and \code{"SuperLearner"} are also allowed.
-#' @param ps.control a list to specify addtional options when \code{method} is set to \code{"gbm"} or \code{"SuperLearner"}.
-#' @param methodout a character to specify the method for outcome regression model. \code{"glm"} is default, and \code{"gbm"} and \code{"SuperLearner"} are also allowed.
-#' @param out.control a list to specify addtional options when \code{methodout} is set to \code{"gbm"} or \code{"SuperLearner"}.
+#' @param ps.method a character to specify the method for estimating propensity scores. \code{"glm"} is default, and \code{"gbm"} and \code{"SuperLearner"} are also allowed.
+#' @param ps.control a list to specify additional options when \code{method} is set to \code{"gbm"} or \code{"SuperLearner"}.
+#' @param out.method a character to specify the method for estimating the outcome regression model. \code{"glm"} is default, and \code{"gbm"} and \code{"SuperLearner"} are also allowed.
+#' @param out.control a list to specify additional options when \code{out.method} is set to \code{"gbm"} or \code{"SuperLearner"}.
 #'
 #' @details A typical form for \code{ps.formula} is \code{treatment ~ terms} where \code{treatment} is the treatment
 #' variable (identical to the variable name used to specify \code{zname}) and \code{terms} is a series of terms
@@ -67,9 +67,9 @@
 #' \code{outcome ~ terms} where \code{outcome} is the outcome variable (identical to the variable name
 #' used to specify \code{yname}) and \code{terms} is a series of terms which specifies a linear
 #' predictor for \code{outcome}. Both \code{ps.formula} and \code{out.formula} by default specify generalized
-#' linear models when \code{ps.estimate} and/or \code{out.estimate} is \code{NULL}. The argument \code{method} and \code{methodout} allow user to choose
+#' linear models when \code{ps.estimate} and/or \code{out.estimate} is \code{NULL}. The argument \code{ps.method} and \code{out.method} allow user to choose
 #' model other than glm to fit the propensity score and outcome regression models for augmentation. Additional argument in the \code{gbm()} function can be supplied through the \code{ps.control} and \code{out.control} argument. Please refer to the user manual of the \code{gbm} package for all the
-#' allowed arguments.  \code{"SuperLearner"} is also allowed in the \code{method} and \code{methodout} arguments. Currently, the SuperLearner method only supports binary treatment with the default method set to \code{"SL.glm"}. The estimation approach is fixed to \code{"method.NNLS"} for both propensity and outcome regression models.
+#' allowed arguments.  \code{"SuperLearner"} is also allowed in the \code{ps.method} and \code{out.method} arguments. Currently, the SuperLearner method only supports binary treatment with the default method set to \code{"SL.glm"}. The estimation approach is default to \code{"method.NNLS"} for both propensity and outcome regression models.
 #' Prediction algorithm and other tuning parameters can also be passed through\code{ps.control} and \code{out.control}. Please refer to the user manual of the \code{SuperLearner} package for all the allowed specifications.
 #'
 #'
@@ -174,10 +174,10 @@
 #' ato1<-PSweight(ps.formula = ps.formula,yname = 'Y',data = psdata,weight = 'overlap')
 #' summary(ato1)
 #'
-#' # augmented weighting estimator
-#' ato2<-PSweight(ps.formula = ps.formula,yname = 'Y',data = psdata,
-#'                augmentation = TRUE,out.formula = out.formula,family = 'gaussian',weight = 'overlap')
-#' summary(ato2)
+#' # augmented weighting estimator, takes longer time to calculate sandwich variance
+#' # ato2<-PSweight(ps.formula = ps.formula,yname = 'Y',data = psdata,
+#' #              augmentation = TRUE,out.formula = out.formula,family = 'gaussian',weight = 'overlap')
+#' # summary(ato2)
 #'
 #' @import nnet
 #' @import MASS
@@ -186,7 +186,7 @@
 #' @importFrom  utils capture.output combn tail
 #' @importFrom  graphics hist legend
 #'
-PSweight<-function(ps.formula=NULL,ps.estimate=NULL,trtgrp=NULL,zname=NULL,yname,data,weight='overlap',delta=0,augmentation=FALSE,bootstrap=FALSE,R=50,out.formula=NULL,out.estimate=NULL,family='gaussian',method='glm',ps.control=list(),methodout='glm',out.control=list()){
+PSweight<-function(ps.formula=NULL,ps.estimate=NULL,trtgrp=NULL,zname=NULL,yname,data,weight='overlap',delta=0,augmentation=FALSE,bootstrap=FALSE,R=50,out.formula=NULL,out.estimate=NULL,family='gaussian',ps.method='glm',ps.control=list(),out.method='glm',out.control=list()){
 
   #extract zname
   if(!is.null(ps.formula)){
@@ -202,7 +202,7 @@ PSweight<-function(ps.formula=NULL,ps.estimate=NULL,trtgrp=NULL,zname=NULL,yname
 
   #trim the data
   if(delta>0){
-    trimobj<-do.call(PStrim,list(data=data,ps.formula = ps.formula, zname=zname, ps.estimte=ps.estimate,delta=delta,optimal=FALSE,out.estimate=out.estimate,method=method,ps.control=ps.control))
+    trimobj<-do.call(PStrim,list(data=data,ps.formula = ps.formula, zname=zname, ps.estimte=ps.estimate,delta=delta,optimal=FALSE,out.estimate=out.estimate,method=ps.method,ps.control=ps.control))
     data<-trimobj$data
     ps.estimate<-trimobj$ps.estimate
     out.estimate<-trimobj$out.estimate
@@ -211,11 +211,11 @@ PSweight<-function(ps.formula=NULL,ps.estimate=NULL,trtgrp=NULL,zname=NULL,yname
 
   if(ncate==2){
 
-    do.call(binest,list(ps.formula=ps.formula,ps.estimate=ps.estimate,zname=zname,yname=yname,data=data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,weight=weight,method=method,ps.control=ps.control,methodout=methodout,out.control=out.control))
+    do.call(binest,list(ps.formula=ps.formula,ps.estimate=ps.estimate,zname=zname,yname=yname,data=data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,weight=weight,ps.method=ps.method,ps.control=ps.control,out.method=out.method,out.control=out.control))
 
   }else{
 
-    do.call(mulest,list(ps.formula=ps.formula,ps.estimate=ps.estimate,zname=zname,yname=yname,data=data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,weight=weight,method=method,ps.control=ps.control,methodout=methodout,out.control=out.control))
+    do.call(mulest,list(ps.formula=ps.formula,ps.estimate=ps.estimate,zname=zname,yname=yname,data=data,trtgrp=trtgrp,augmentation=augmentation,bootstrap=bootstrap,R=R,out.formula=out.formula,out.estimate=out.estimate,family=family,weight=weight,ps.method=ps.method,ps.control=ps.control,out.method=out.method,out.control=out.control))
   }
 }
 

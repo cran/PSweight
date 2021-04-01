@@ -14,8 +14,8 @@
 #' match the name of treatment level, if column name is missing or there is a mismatch,
 #' the column names would be assigned according to alphabatic order of the treatment levels, with a
 #' similar mechanism as in \code{ps.estimate}.
-#' @param method a character to specify the method for propensity model. \code{"glm"} is default, and \code{"gbm"} and \code{"SuperLearner"} are also allowed.
-#' @param ps.control a list to specify addtional optionals when \code{method} is set to \code{"gbm"} or \code{"SuperLearner"}.
+#' @param method a character to specify the method for estimating propensity scores. \code{"glm"} is default, and \code{"gbm"} and \code{"SuperLearner"} are also allowed.
+#' @param ps.control a list to specify additional options when \code{method} is set to \code{"gbm"} or \code{"SuperLearner"}.
 #'
 #' @details A typical form for \code{ps.formula} is \code{treatment ~ terms} where \code{treatment} is the treatment
 #' variable (identical to the variable name used to specify \code{zname}) and \code{terms} is a series of terms
@@ -23,10 +23,10 @@
 #' model for estimating the propensity scores, when \code{ps.estimate} is \code{NULL}.
 #'  \code{"glm"} is the default method for propensity score estimation. Logistic regression will be used for binary outcomes,
 #' and multinomial logistic regression will be used for outcomes with more than two categories. The alternative method option of \code{"gbm"} serves as an API to call the \code{gbm()} function from the
-#' \code{gbm} package. Additional argument in the \code{gbm()} function can be supplied through the \code{ps.control=list()} argument in \code{SumStat()}. Please refer to the user manual of the gbm package for all the
+#' \code{gbm} package. Additional argument in the \code{gbm()} function can be supplied through the \code{ps.control=list()} argument in \code{SumStat()}. Please refer to the user manual of the \code{"gbm"} package for all the
 #' allowed arguments. Currently, models for binary or multinomial treatment will be automatically chosen based on the number of treatment categories.
-#' \code{"SuperLearner"} is also allowed in the \code{method} argument to pass the propensity score estimation to the \code{SuperLearner()} function in \code{SuperLearner} package.
-#' Currently, the SuperLearner method only support binary treatment with the default method set to \code{"SL.glm"}. The estimation approach is fixed to \code{"method.NNLS"}.
+#' \code{"SuperLearner"} is also allowed in the \code{method} argument to call the \code{SuperLearner()} function in \code{SuperLearner} package.
+#' Currently, the SuperLearner method only support binary treatment with the default method set to \code{"SL.glm"}. The estimation approach is default to \code{"method.NNLS"}.
 #' Prediction algorithm and other tuning parameters can also be passed through \code{ps.control=list()}. Please refer to the user manual of the \code{SuperLearner} package for all the allowed specifications.
 #'
 #'
