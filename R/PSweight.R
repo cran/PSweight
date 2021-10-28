@@ -202,7 +202,7 @@ PSweight<-function(ps.formula=NULL,ps.estimate=NULL,trtgrp=NULL,zname=NULL,yname
 
   #trim the data
   if(delta>0){
-    trimobj<-do.call(PStrim,list(data=data,ps.formula = ps.formula, zname=zname, ps.estimte=ps.estimate,delta=delta,optimal=FALSE,out.estimate=out.estimate,method=ps.method,ps.control=ps.control))
+    trimobj<-do.call(PStrim,list(data=data,ps.formula = ps.formula, zname=zname, ps.estimate=ps.estimate,delta=delta,optimal=FALSE,out.estimate=out.estimate,method=ps.method,ps.control=ps.control))
     data<-trimobj$data
     ps.estimate<-trimobj$ps.estimate
     out.estimate<-trimobj$out.estimate
