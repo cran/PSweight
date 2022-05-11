@@ -215,10 +215,9 @@ Franklin, J.M., Stürmer, T., Hernández-Díaz, S. and Glynn, R.J. (2019).
 Multinomial extension of propensity score trimming methods: A simulation study.
 American Journal of Epidemiology, 188(3), 609-616.
 
-
 Li, F., Li, F. (2019). Propensity score weighting for causal inference with multiple treatments.
 The Annals of Applied Statistics, 13(4), 2389-2415.
 
 Zhou, Y., Matsouaka, R. A., Thomas, L. (2020).
-Propensity score weighting under limited overlap and model misspecification. Statistical Methods in Medical Research (Online)
+Propensity score weighting under limited overlap and model misspecification. Statistical Methods in Medical Research, 29(12), 3721-3756.
 }

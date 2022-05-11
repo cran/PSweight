@@ -232,7 +232,7 @@ SumStat<- function(ps.formula=NULL,ps.estimate=NULL,trtgrp=NULL,Z=NULL,covM=NULL
     #transform factor/categorical column, if any
     cat_index<-c()
     for(i in 1:ncol(covM)){
-      if(class(covM[,i])=="factor") {
+      if(inherits(covM[,i],"factor")) {
         if(length(table(covM[,i]))==1){
           stop("invariate covariate supplied ","\n")
         }else{
