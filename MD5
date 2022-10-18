@@ -1,4 +1,4 @@
-c286b964a6aa5013074c6eb210b3526b *DESCRIPTION
+9691a4532252479efb1e6f3997007e87 *DESCRIPTION
 756d7129419afbb04c74aca32af375bf *NAMESPACE
 e69d4540a057a7afa2a2f32c3109d299 *R/NCDS.R
 a3f9142ae04f453b474da8407fbd9b70 *R/OUTmethod.R
@@ -31,7 +31,7 @@ c3ec0bc0cb4f1bc474966176225402c9 *build/vignette.rds
 4905d1d0f4f4341452c956b9aceb1113 *data/psdata.RData
 12408780df1662c991d3f23e0bb17462 *data/psdata_cl.rda
 2071a3828f7e0d7eec31817e325ee8b9 *inst/doc/vignette.Rnw
-710a0e8a7f33acc063e171a4113c65f0 *inst/doc/vignette.pdf
+cd328083e544aef05602d8cebe34a370 *inst/doc/vignette.pdf
 73534d8c027137099f5cdce583e6ece2 *man/NCDS.Rd
 1808499689965def631a934d691cfc0b *man/OUTmethod.Rd
 966e7b63b83e2458e4a1717293401251 *man/PSmethod.Rd
@@ -52,5 +52,5 @@ bc11a976d0b065897f05d8a0dd7deb8e *man/print.SumStat.Rd
 342de3f364cf608f0ccda69d11e983b0 *man/summary.PSweight.Rd
 c565290960ec75c0d7d04f29d3bdd677 *man/summary.SumStat.Rd
 7aa7f12cefc4d89abab80ba70ba1b319 *man/vcov.PSweight.Rd
-4235621ab9c5e9a302b0eb0ecb3941dd *vignettes/Software_vig.pdf
+746bb8e46c9372d9657e9314f2f81f81 *vignettes/Software_vig.pdf
 2071a3828f7e0d7eec31817e325ee8b9 *vignettes/vignette.Rnw
