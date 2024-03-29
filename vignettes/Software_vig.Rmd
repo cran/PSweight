@@ -1,0 +1,10 @@
+---
+title: "Software Vignette"
+output: rmarkdown::pdf_document
+vignette: >
+  %\VignetteIndexEntry{Software Vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+This vignette provides an overview of the PSweight package and its functionality. For detailed information, please refer to the 'Software_vig_original.pdf' file included in the 'vignettes' directory of the package source.
