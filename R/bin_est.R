@@ -74,6 +74,9 @@ binest<-function(ps.formula=NULL,ps.estimate=NULL,zname=NULL,yname,data,trtgrp=N
 
   #compute outcome regression for augmentation
   if(augmentation){
+    if(is.null(out.estimate) && length(out.formula) == 0){
+      stop("When augmentation = TRUE and out.estimate is not provided, a valid out.formula must be supplied.")
+    }
     #no outcome estimation provided
     if(is.null(out.estimate)){
       #fit two outcome regression model for different treatment groups

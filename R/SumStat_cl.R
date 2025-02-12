@@ -82,16 +82,15 @@
 #' @export
 #'
 #' @examples
-#'
-# data("psdata_cl")
-# # the propensity model
-# ps.formula<-trt~cov1+cov2+cov3+cov4+cov5+cov6+(1|clt)
-#
-# # using SumStat to estimate propensity scores
-# msstat <- SumStat_cl(ps.formula, trtgrp="1", data=psdata_cl,
-#   weight=c("IPW","overlap","treated","entropy","matching"))
-# summary(msstat)
-#'
+#' data("psdata_cl")
+#' # the propensity model
+#' ps.formula<-trt~cov1+cov2+cov3+cov4+cov5+cov6+(1|clt)
+#' 
+#' # using SumStat to estimate propensity scores
+#' msstat <- SumStat_cl(ps.formula, trtgrp="1", data=psdata_cl,
+#'   weight=c("IPW","overlap","treated","entropy","matching"))
+#' summary(msstat)
+#' 
 #' @import nnet SuperLearner gbm lme4
 #' @importFrom  stats binomial coef cov formula glm lm model.matrix plogis poisson predict qnorm quantile sd
 #' @importFrom  utils capture.output combn

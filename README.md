@@ -1,6 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
+
 # PSweight
 
 This `PSweight` Package is to perform propensity score weighting
@@ -28,7 +29,8 @@ allow for additional flexibility in specifying the propensity score and
 outcome models, the package can also work with user-supplied propensity
 score estimates and outcome predictions through `ps.estimate` and
 `out.estimate`, and provide a sandwich standard error that ignores the
-variability in estimating these nuisances.
+variability in estimating these nuisances. Additionally, `PSweight` package has been extended its application to survey observational data, providing comprehensive implementations for propensity score weighting and augmented estimators under common survey settings, making it a powerful tool for causal inference in complex survey datasets.
+
 
 ## Installation
 
@@ -39,44 +41,28 @@ You can install the released version of PSweight from
 install.packages("PSweight")
 ```
 
+## Maintainer
+
+yukang.zeng@yale.edu
+
 ## Update
 
-The version 1.1.7 includes module for cluster design. Please check out
-the help page for PSweight_cl and SumStat_cl.
+Version 2.1.0 of PSweight extends its application to survey observational data, enabling its use in real-world studies that incorporate complex survey designs. This version introduces several enhancements to facilitate population-level inference under survey settings.
 
-The version 1.2.0 of PSweight addresses several important bug fixes to
-enhance the functionality and user experience of our R package. Notable
-updates include:
+1.The PSmethod and PStrim functions have been expanded to incorporate survey weights for population-level propensity score estimation. This update allows for the estimation of propensity scores using a survey-weighted regression model, ensuring that population-level effects are appropriately accounted for in the analysis.
 
-1.Enhanced Parameter Support: The “PSmethod” and “OUTmethod” functions
-have been updated to accurately incorporate parameters specified via
-“ps.control” and “out.control”.
+2.Additionally, the new release introduces survey-based propensity score weighting estimators and extends the augmented estimators to survey settings. Three augmented estimators are now implemented: Moment Estimator (MOM), Clever Covariate Estimator (CVR), and Weighted Regression Estimator (WET, default). These estimators are applicable under three common survey sampling settings, including Retrospective, where sampling depends on both treatment assignment and covariates; Prospective, where sampling occurs before treatment assignment; and Independent, where the sampling process is independent of treatment assignment.
 
-2.Propensity Score Model Output: Users can now access the fitted
-propensity score model directly from the “SumStat” function output,
-facilitating deeper analysis and diagnostics.
+3.Enhancements have also been made to balance assessment and propensity score visualization functions. The SumStat function and related diagnostic tools have been extended to incorporate survey-weighted analysis, and a new function, SumStat_SW, has been introduced to support survey-specific balance diagnostics and propensity score visualization. These updates ensure that users can assess covariate balance and evaluate the effectiveness of propensity score weighting within survey-based observational studies.
 
-3.Improved Handling of Single Covariate Models: The package now includes
-checks within “summary.SumStat()” and “plot.SumStat()” functions to
-ensure they operate correctly even when the propensity score model is
-based on a single covariate.
+4.Certain limitations remain in this release. Currently, multigroup and cluster-based propensity score weighting functionalities have not been extended to survey data settings and remain unchanged. Furthermore, external propensity score estimates (ps.estimate) are not supported under survey settings to ensure the integrity of population-level estimation. Bootstrap variance estimation is also not supported for survey observational data, and users are encouraged to use sandwich variance estimators instead for variance estimation.
 
-4.Flexible Treatment Variable Naming: The “SumStat_cl()” function has
-been modified to replace the hardcoded ‘trt’ variable with a dynamic
-reference, “data\[\[zname\]\]”, allowing users to specify their
-treatment variable names.
-
-These updates aim to enhance the PSweight package’s functionality,
-usability, and analytical precision. Users are encouraged to explore the
-new features and provide feedback for continuous improvement.
+These updates significantly enhance the applicability of PSweight for survey-based causal inference, enabling researchers to account for complex sampling mechanisms while maintaining robust estimation procedures. The theoretical framework behind these enhancements is detailed in Zeng, Li, and Tong (2025), which provides best practices for incorporating survey weights into propensity score weighting methods to enhance the applicability and accuracy of causal inference in survey observational studies.
 
 ## Downloads
 
-<figure>
-<img src="https://cranlogs.r-pkg.org/badges/grand-total/PSweight"
-alt="Downloads Status" />
-<figcaption aria-hidden="true">Downloads Status</figcaption>
-</figure>
+![Downloads
+Status](https://cranlogs.r-pkg.org/badges/grand-total/PSweight)
 
 ## Example
 
@@ -84,6 +70,10 @@ This is a basic example on design:
 
 ``` r
 library(PSweight)
+#> Warning: replacing previous import 'lifecycle::last_warnings' by
+#> 'rlang::last_warnings' when loading 'tibble'
+#> Warning: replacing previous import 'lifecycle::last_warnings' by
+#> 'rlang::last_warnings' when loading 'pillar'
 example("SumStat")
 #> 
 #> SumStt> data("psdata")

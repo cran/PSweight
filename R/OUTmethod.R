@@ -159,7 +159,7 @@ OUTmethod<-function(out.formula=out.formula, y=y, out.method="glm", family='gaus
     m.est <- predict(fitSL, newdata=data.frame(covout))$pred
   }
 
-
+  m.est <- as.numeric(m.est)
 
   return(list(m.est=m.est,gamma.h=gamma.h))
 }

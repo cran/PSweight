@@ -81,15 +81,14 @@ Additional details on balancing weights and generalized overlap weights for mult
 Li and Li (2019). For details about matching weights and entropy weights, please refer to Li and Greene (2013) and Zhou, Matsouaka and Thomas (2020).
 }
 \examples{
-
 data("psdata_cl")
 # the propensity model
-# ps.formula<-trt~cov1+cov2+cov3+cov4+cov5+cov6+(1|clt)
+ps.formula<-trt~cov1+cov2+cov3+cov4+cov5+cov6+(1|clt)
 
 # using SumStat to estimate propensity scores
-# msstat <- SumStat_cl(ps.formula, trtgrp="1", data=psdata_cl,
-#   weight=c("IPW","overlap","treated","entropy","matching"))
-#summary(msstat)
+msstat <- SumStat_cl(ps.formula, trtgrp="1", data=psdata_cl,
+  weight=c("IPW","overlap","treated","entropy","matching"))
+summary(msstat)
 
 }
 \references{
