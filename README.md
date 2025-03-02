@@ -29,7 +29,11 @@ allow for additional flexibility in specifying the propensity score and
 outcome models, the package can also work with user-supplied propensity
 score estimates and outcome predictions through `ps.estimate` and
 `out.estimate`, and provide a sandwich standard error that ignores the
-variability in estimating these nuisances. Additionally, `PSweight` package has been extended its application to survey observational data, providing comprehensive implementations for propensity score weighting and augmented estimators under common survey settings, making it a powerful tool for causal inference in complex survey datasets.
+variability in estimating these nuisances. Additionally, `PSweight` package 
+has been extended its application to survey observational data, providing 
+comprehensive implementations for propensity score weighting and augmented 
+estimators under common survey settings, making it a powerful tool for 
+causal inference in complex survey datasets.
 
 
 ## Installation
@@ -58,6 +62,8 @@ Version 2.1.0 of PSweight extends its application to survey observational data, 
 4.Certain limitations remain in this release. Currently, multigroup and cluster-based propensity score weighting functionalities have not been extended to survey data settings and remain unchanged. Furthermore, external propensity score estimates (ps.estimate) are not supported under survey settings to ensure the integrity of population-level estimation. Bootstrap variance estimation is also not supported for survey observational data, and users are encouraged to use sandwich variance estimators instead for variance estimation.
 
 These updates significantly enhance the applicability of PSweight for survey-based causal inference, enabling researchers to account for complex sampling mechanisms while maintaining robust estimation procedures. The theoretical framework behind these enhancements is detailed in Zeng, Li, and Tong (2025), which provides best practices for incorporating survey weights into propensity score weighting methods to enhance the applicability and accuracy of causal inference in survey observational studies.
+
+Version 2.1.1 adds additional examples with more detailed output for each core function to better demonstrate usage under survey settings.
 
 ## Downloads
 
@@ -142,4 +148,76 @@ example("PSweight")
 #> PSwght> 
 #> PSwght> 
 #> PSwght>
+
+
+example("PSweight_SW")
+
+# PSw_SW> data("psdata")
+
+# PSw_SW> data("psdata_bin_prospective_fp")
+
+# PSw_SW> data("psdata_bin_retrospective_fp")
+
+# PSw_SW> # Define the formulas
+# PSw_SW> ps.formula  <- trt ~ cov1 + cov2 + cov3 + cov4 + cov5 + cov6
+
+# PSw_SW> out.formula <- Y ~ cov1 + cov2 + cov3 + cov4 + cov5 + cov6
+
+# PSw_SW> # Prospective design without augmentation
+# PSw_SW> pato1_sw <- PSweight_SW(ps.formula = ps.formula, yname = "Y", 
+# PSw_SW+                         data = psdata_bin_prospective_fp, weight = "overlap", 
+# PSw_SW+                         survey.indicator = TRUE, survey.design = "Prospective", 
+# PSw_SW+                         svywtname = "survey_weight", 
+# PSw_SW+                         delta = 0.1, augmentation = FALSE, bootstrap = FALSE, R = 50, 
+# PSw_SW+                         out.formula = NULL, out.estimate = NULL, family = "gaussian", 
+# PSw_SW+                         ps.method = "glm", ps.control = list(), 
+# PSw_SW+                         out.method = "glm", out.control = list())
+
+# PSw_SW> summary(pato1_sw)
+
+# Closed-form inference: 
+
+# Original group value:  1, 2 
+
+# Contrast: 
+#             1 2
+# Contrast 1 -1 1
+
+#            Estimate Std.Error      lwr     upr  Pr(>|z|)    
+# Contrast 1 -1.28771   0.28368 -1.84372 -0.7317 5.645e-06 ***
+# ---
+# Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+# PSw_SW> # Retrospective design with augmentation using the Weighted Regression Estimator(WET) estimator
+# PSw_SW> pato2_sw <- PSweight_SW(ps.formula = ps.formula, yname = "Y", 
+# PSw_SW+                         data = psdata_bin_retrospective_fp, weight = "overlap", 
+# PSw_SW+                         survey.indicator = TRUE, survey.design = "Retrospective", 
+# PSw_SW+                         svywtname = "survey_weight", 
+# PSw_SW+                         delta = 0.1, augmentation = TRUE, augmentation.type = "WET", 
+# PSw_SW+                         bootstrap = FALSE, R = 50, 
+# PSw_SW+                         out.formula = out.formula, out.estimate = NULL, family = "gaussian", 
+# PSw_SW+                         ps.method = "glm", ps.control = list(), 
+# PSw_SW+                         out.method = "glm", out.control = list())
+
+# PSw_SW> summary(pato2_sw)
+
+# Closed-form inference: 
+
+# Original group value:  1, 2 
+
+# Contrast: 
+#             1 2
+# Contrast 1 -1 1
+
+#            Estimate Std.Error      lwr     upr  Pr(>|z|)    
+# Contrast 1 -1.58975   0.21409 -2.00936 -1.1702 1.121e-13 ***
+# ---
+# Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+
+
+
+
+
+
 ```

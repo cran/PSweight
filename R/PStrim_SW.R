@@ -89,14 +89,24 @@
 #' @export
 #'
 #' @examples
-#' data("psdata")
-#'
-#' # the propensity model
-#' ps.formula<-trt~cov1+cov2+cov3+cov4+cov5+cov6
-#'
-#' # trim the original data by setting the threshold of propensity as 0.05
-#' PStrim(data=psdata, ps.formula=ps.formula, delta=0.05)
-#' PStrim(data=psdata, ps.formula=ps.formula, optimal=TRUE)
+#' # Define the propensity score model
+#' ps.formula <- trt ~ cov1 + cov2 + cov3 + cov4 + cov5 + cov6
+#' 
+#' ## Example 1: Apply symmetric trimming with delta = 0.05
+#' trim_result <- PStrim_SW(data = psdata_bin_prospective_fp,
+#'                          ps.formula = ps.formula,
+#'                          svywtname = "survey_weight",
+#'                          delta = 0.05)
+#' # Display the trimming summary and view the trimmed data
+#' print(trim_result)
+#' 
+#' ## Example 2: Apply optimal trimming (delta is ignored when optimal = TRUE)
+#' trim_result_opt <- PStrim_SW(data = psdata_bin_prospective_fp,
+#'                              ps.formula = ps.formula,
+#'                              svywtname = "survey_weight",
+#'                              optimal = TRUE)
+#' # Display the optimal trimming summary including the computed lambda
+#' print(trim_result_opt)
 #'
 #' @import nnet
 #' @import MASS

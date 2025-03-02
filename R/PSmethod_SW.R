@@ -37,16 +37,37 @@
 #' @export
 #'
 #' @examples
+#' # Load example datasets
 #' data("psdata")
 #' data("psdata_bin_prospective_fp")
 #' data("psdata_bin_retrospective_fp")
 #' 
-#' # the propensity model
-#' ps.formula <- trt~cov1+cov2+cov3+cov4+cov5+cov6
+#' # Define the propensity score model.
+#' ps.formula <- trt ~ cov1 + cov2 + cov3 + cov4 + cov5 + cov6
+#' 
+#' # Extract the survey weights from the retrospective data.
 #' survey.weight <- psdata_bin_retrospective_fp$survey_weight
+#' 
+#' # Specify the number of treatment groups (for binary treatment, ncate = 2)
+#' ncate <- 2
+#' 
+#' # Fit the propensity score model using PSmethod_SW.
 #' psfit <- PSmethod_SW(ps.formula = ps.formula,
-#'                      data = psdata_bin_retrospective_fp, 
-#'                      survey.weight = survey.weight, ncate=2)
+#'                      data = psdata_bin_retrospective_fp,
+#'                      survey.weight = survey.weight,
+#'                      ncate = ncate)
+#' 
+#' # Print the first 10 rows of the estimated propensity scores.
+#' cat("Estimated propensity scores (first 10 observations):\n")
+#' print(head(psfit$e.h, 10))
+#' 
+#' # For the 'glm' method, print the estimated coefficient vector.
+#' cat("\nEstimated coefficients (beta.h):\n")
+#' print(psfit$beta.h)
+#' 
+#' # Users can also inspect the full fitted model object.
+#' cat("\nFitted propensity model object summary:\n")
+#' print(summary(psfit$ps.fitObjects))
 #' 
 #' 
 PSmethod_SW<-function(ps.formula=ps.formula, method="glm", data=data, survey.weight = survey.weight, ncate=ncate, ps.control=list()){

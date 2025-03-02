@@ -1,7 +1,7 @@
 
 \<!-NEWS.md is generated from NEWS.Rmd. Please edit that file –\>
 
-# PSweight 2.1.0 (Release Date: 2025-02-12)
+# PSweight 2.1.1 (Release Date: 2025-03-01)
 
 Version 2.1.0 of PSweight extends its application to survey observational data, enabling its use in real-world studies that incorporate complex survey designs. This version introduces several enhancements to facilitate population-level inference under survey settings.
 
@@ -14,3 +14,5 @@ Version 2.1.0 of PSweight extends its application to survey observational data, 
 4.Certain limitations remain in this release. Currently, multigroup and cluster-based propensity score weighting functionalities have not been extended to survey data settings and remain unchanged. Furthermore, external propensity score estimates (ps.estimate) are not supported under survey settings to ensure the integrity of population-level estimation. Bootstrap variance estimation is also not supported for survey observational data, and users are encouraged to use sandwich variance estimators instead for variance estimation.
 
 These updates significantly enhance the applicability of PSweight for survey-based causal inference, enabling researchers to account for complex sampling mechanisms while maintaining robust estimation procedures. The theoretical framework behind these enhancements is detailed in Zeng, Li, and Tong (2025), which provides best practices for incorporating survey weights into propensity score weighting methods to enhance the applicability and accuracy of causal inference in survey observational studies.
+
+Version 2.1.1 adds additional examples with more detailed output for each core function to better demonstrate usage under survey settings.

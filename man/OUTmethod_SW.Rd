@@ -69,16 +69,31 @@ and the model defaults to \code{"gaussian"}. These adjustments ensure compatibil
 estimation approaches.
 }
 \examples{
+# Load example datasets
 data("psdata")
 data("psdata_bin_prospective_fp")
 data("psdata_bin_retrospective_fp")
 
-#' the outcome model
-out.formula <- Y~cov1+cov2+cov3+cov4+cov5+cov6
+# Define the outcome model formula.
+out.formula <- Y ~ cov1 + cov2 + cov3 + cov4 + cov5 + cov6
+
+# Extract the outcome vector from the retrospective data.
 y <- psdata_bin_retrospective_fp$Y
-#train on model with treatment group 1
-datain <- psdata_bin_retrospective_fp[psdata_bin_retrospective_fp$trt==1, ]
-outfit <- OUTmethod_SW(out.formula = out.formula, y=y, datain = datain, 
+
+# Use only the observations in treatment group 1 as the training data.
+datain <- psdata_bin_retrospective_fp[psdata_bin_retrospective_fp$trt == 1, ]
+
+# Fit the outcome regression model via OUTmethod_SW.
+# By default, out.method = "glm" and family = "gaussian" are used.
+outfit <- OUTmethod_SW(out.formula = out.formula, y = y, datain = datain,
                        dataout = psdata_bin_retrospective_fp)
+
+# Print the predicted outcome vector on dataout.
+cat("Predicted outcomes (first 10 values):\n")
+print(head(outfit$m.est, 10))
+
+# Print the estimated coefficient vector from the GLM.
+cat("\nEstimated coefficients (gamma.h):\n")
+print(outfit$gamma.h)
 
 }

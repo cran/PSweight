@@ -2,8 +2,8 @@ Package: PSweight
 Type: Package
 Title: Propensity Score Weighting for Causal Inference with
         Observational Studies and Randomized Trials
-Version: 2.1.0
-Date: 2025-02-12
+Version: 2.1.1
+Date: 2025-03-01
 Authors@R: c(person("Tianhui","Zhou", role = "aut",
             email = "thuizhou@outlook.com"),
             person("Guangyu", "Tong", role = "aut",
@@ -27,7 +27,7 @@ Suggests: knitr, rmarkdown
 Imports: lme4, nnet, MASS, ggplot2, numDeriv, gbm, SuperLearner, survey
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2025-02-12 21:52:18 UTC; yukang
+Packaged: 2025-03-02 06:03:13 UTC; yukang
 Author: Tianhui Zhou [aut],
   Guangyu Tong [aut],
   Fan Li [aut],
@@ -36,4 +36,4 @@ Author: Tianhui Zhou [aut],
   Yukang Zeng [cre]
 Maintainer: Yukang Zeng <yukang.zeng@yale.edu>
 Repository: CRAN
-Date/Publication: 2025-02-12 22:20:02 UTC
+Date/Publication: 2025-03-02 06:30:02 UTC
