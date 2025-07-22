@@ -1,6 +1,11 @@
 
 \<!-NEWS.md is generated from NEWS.Rmd. Please edit that file –\>
 
+# PSweight 2.1.2 (Release Date: 2025-07-22)
+
+- Updated package vignette structure to ensure full PDF documentation is directly available on CRAN
+- Minor documentation improvements
+
 # PSweight 2.1.1 (Release Date: 2025-03-01)
 
 Version 2.1.0 of PSweight extends its application to survey observational data, enabling its use in real-world studies that incorporate complex survey designs. This version introduces several enhancements to facilitate population-level inference under survey settings.

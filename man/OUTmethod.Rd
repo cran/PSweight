@@ -54,7 +54,7 @@ Additional argument in them can be supplied through the \code{...} argument. Ple
 allowed arguments.
 }
 \examples{
-
+data("psdata")
 #' the outcome model
 out.formula <- Y~cov1+cov2+cov3+cov4+cov5+cov6
 y <- psdata$Y
